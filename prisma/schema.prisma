@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ChefSpeciality {
+  ITALIAN
+  FRENCH
+  JAPANESE
+  BRAZILIAM
+  VEGAN
+  DESSERTS
+  CONTEMPORARY
+}
+
+enum UserRole {
+  CHEF
+  ADMIN
+}
+
+model User {
+  id        Int      @id @default(autoincrement()) @map("user_id")
+  email     String   @unique @map("user_email")
+  document  String   @map("user_document")
+  password  String   @map("user_password")
+  role      UserRole @default(CHEF) @map("user_role")
+  createdAt DateTime @default(now()) @map("user_createdAt")
+  updatedAt DateTime @updatedAt @map("user_updatedAt")
+
+  chef Chef?
+
+  @@index([email])
+  @@map("tb_users")
+}
+
+model Chef {
+  id           Int             @id @default(autoincrement()) @map("chef_id")
+  userId       Int             @unique @map("chef_userId")
+  user         User            @relation(fields: [userId], references: [id])
+  firstName    String          @map("chef_firstName")
+  lastName     String          @map("chef_lastName")
+  bio          String?         @map("chef_bio")
+  profileImage String?         @map("chef_profileImage")
+  speciality   ChefSpeciality? @map("chef_speciality")
+  experience   Int             @default(0) @map("chef_experience")
+  phoneNumber  String?         @map("chef_phoneNumber")
+
+  @@index([userId, speciality, experience])
+  @@map("tb_chefs")
+}
